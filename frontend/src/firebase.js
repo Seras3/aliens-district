@@ -8,7 +8,11 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  getAuth,
+  updateProfile,
+  signOut
 } from 'firebase/auth';
+import { DEFAULT_PROFILE_PICTURE_URL } from "./constants";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCkVk7wm5GZQLsDRc8L2vZ_ZwDZLcxBX1k",
@@ -23,6 +27,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
+const auth = getAuth();
 connectFirestoreEmulator(db, 'localhost', 3000);
 
 const googleProvider = new GoogleAuthProvider();
@@ -46,24 +51,39 @@ const signInWithGoogle = async () => {
   }
 };
 
+
 const registerWithEmailAndPassword = async (name, email, password) => {
   try {
-    const res = await createUserWithEmailAndPassword(email, password);
-    const user = res.user;
-    await addDoc(collection(db, "users"), {
-      uid: user.uid,
-      name,
-      authProvider: "local",
-      email,
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+
+    updateProfile(res.user, {
+      displayName: name,
+      photoURL: DEFAULT_PROFILE_PICTURE_URL
+    }).then(() => {
+      // Profile updated!
+      // ...
+    }).catch((err) => {
+      console.error(err);
+      alert(err.message);
     });
+
   } catch (err) {
     console.error(err);
     alert(err.message);
   }
 };
 
+const logout = async () => {
+  signOut(auth).then(() => {
+    // Sign-out successful.
+  }).catch((err) => {
+    alert(err.message);
+  });
+}
+
 
 export {
+  logout,
   signInWithGoogle,
   registerWithEmailAndPassword,
 };
