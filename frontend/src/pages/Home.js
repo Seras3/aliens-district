@@ -3,7 +3,9 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { logout } from "../firebase";
 import { Link } from "react-router-dom";
 
-import { Button, Box, Grid } from '@mui/material';
+import Page from '../components/Page';
+
+import { Button, Grid } from '@mui/material';
 
 function Home() {
   const [user, loading, error] = useAuthState(getAuth());
@@ -14,7 +16,7 @@ function Home() {
 
 
   return (
-    <Box sx={{ display: 'flex' }} flexDirection="column" alignItems="center" >
+    <Page>
       <p>{user ? JSON.stringify(user) : "No user logged in."}</p>
       {user ?
         <Button variant="contained" onClick={logout}>Log out</Button>
@@ -27,7 +29,7 @@ function Home() {
             <Button variant="contained" component={Link} to="/register">Sign Up</Button>
           </Grid>
         </Grid>}
-    </Box >
+    </Page>
   );
 }
 

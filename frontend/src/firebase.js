@@ -5,7 +5,8 @@ import {
   connectFirestoreEmulator,
 } from "@firebase/firestore";
 import {
-  signInWithPopup,
+  signInWithRedirect,
+  signInWithEmailAndPassword,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   getAuth,
@@ -14,14 +15,15 @@ import {
 } from 'firebase/auth';
 import { DEFAULT_PROFILE_PICTURE_URL } from "./constants";
 
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCkVk7wm5GZQLsDRc8L2vZ_ZwDZLcxBX1k",
-  authDomain: "aliens-district.firebaseapp.com",
-  projectId: "aliens-district",
-  storageBucket: "aliens-district.appspot.com",
-  messagingSenderId: "94770152266",
-  appId: "1:94770152266:web:949e8cad864e86052437b3",
-  measurementId: "G-ZMKE3CNL8V"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
@@ -32,9 +34,10 @@ connectFirestoreEmulator(db, 'localhost', 3000);
 
 const googleProvider = new GoogleAuthProvider();
 
+
 const signInWithGoogle = async () => {
   try {
-    const res = await signInWithPopup(googleProvider);
+    const res = await signInWithRedirect(auth, googleProvider);
     const user = res.user;
     const queryData = await getDoc(query(collection(db, "users"), where("uid", "==", user.uid)));
     if (!queryData.data()) {
@@ -51,6 +54,14 @@ const signInWithGoogle = async () => {
   }
 };
 
+const signInWitEmail = async (email, password) => {
+  try {
+    const res = await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+}
 
 const registerWithEmailAndPassword = async (name, email, password) => {
   try {
@@ -85,6 +96,7 @@ const logout = async () => {
 export {
   logout,
   signInWithGoogle,
+  signInWitEmail,
   registerWithEmailAndPassword,
 };
 
