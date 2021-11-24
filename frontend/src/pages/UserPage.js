@@ -4,12 +4,15 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 import Page from '../components/Page';
 
-import { Paper, Grid, Box, Typography } from '@mui/material';
+import { Grid, Box, Typography } from '@mui/material';
 import MenuAppBar from "../components/MenuAppBar";
 import UserAvatar from "../components/UserAvatar";
 import { addAlphaToHex } from "../utils/colors";
 import InfiniteScroll from "react-infinite-scroll-component";
 
+
+const CARD_HEIGHT = 250;
+const CARD_WIDTH = 400;
 
 function UserPage() {
   const [user, loading, error] = useAuthState(getAuth());
@@ -32,6 +35,26 @@ function UserPage() {
 
   if (error) return <div>Error: {error}</div>
 
+
+  const renderCard = (height, width, content, index) => {
+    return <Box sx={{ height: height + 'px', width: width + 'px' }} bgcolor='red' key={index}>
+      {content}
+    </Box>
+  }
+
+  const renderRow = (height, margin, perRow, arr, index) => {
+    return (
+      <Box sx={{ height: height + 2 * margin + 'px' }} bgcolor='blue' key={index}>
+        <Box sx={{ display: 'flex', height: '100%' }} flexGrow={1} justifyContent='space-around' alignItems='center'>
+          {
+            Array.from({ length: perRow }).map((i, idx) => {
+              return renderCard(CARD_HEIGHT, CARD_WIDTH, index + idx, index + idx)
+            })
+          }
+        </Box>
+      </Box >
+    );
+  }
 
   return (
     <Page>
@@ -73,11 +96,13 @@ function UserPage() {
                 </p>
               }
             >
-              {items.map((i, index) => (
-                <Box height="100px" margin='2px' bgcolor='white' key={index}>
-                  div - #{index}
-                </Box>
-              ))}
+              {items.map((i, index) => {
+                let perRow = 2;
+                if (index % perRow === 0) {
+                  return renderRow(CARD_HEIGHT, 25, perRow, items, index);
+                }
+                return;
+              })}
             </InfiniteScroll>
 
 
