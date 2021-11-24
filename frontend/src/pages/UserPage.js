@@ -8,16 +8,34 @@ import { Grid, Box, Typography } from '@mui/material';
 import MenuAppBar from "../components/MenuAppBar";
 import UserAvatar from "../components/UserAvatar";
 import { addAlphaToHex } from "../utils/colors";
-import InfiniteScroll from "react-infinite-scroll-component";
+import InfiniteScrollResponsive from '../components/InfiniteScrollResponsive';
+import PostCard from '../components/PostCard';
+import { useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
-
-const CARD_HEIGHT = 250;
+const CARD_HEIGHT = 360;
 const CARD_WIDTH = 400;
 
 function UserPage() {
   const [user, loading, error] = useAuthState(getAuth());
   const [items, setItems] = useState(Array.from({ length: 20 }));
   const [hasMore, setHasMore] = useState(true);
+
+  const theme = useTheme();
+  const xs = useMediaQuery(theme.breakpoints.up('xs'));
+  const lg = useMediaQuery(theme.breakpoints.up('lg'));
+
+
+  let perRow;
+
+  if (xs) {
+    perRow = 1;
+  }
+
+  if (lg) {
+    perRow = 2;
+  }
+
 
   const fetchMoreData = () => {
     if (items.length >= 100) {
@@ -37,25 +55,8 @@ function UserPage() {
 
 
   const renderCard = (height, width, content, index) => {
-    return <Box sx={{ height: height + 'px', width: width + 'px' }} bgcolor='red' key={index}>
-      {content}
-    </Box>
+    return <PostCard height={height} width={width} content={content} index={index} />
   }
-
-  const renderRow = (height, margin, perRow, arr, index) => {
-    return (
-      <Box sx={{ height: height + 2 * margin + 'px' }} bgcolor='blue' key={index}>
-        <Box sx={{ display: 'flex', height: '100%' }} flexGrow={1} justifyContent='space-around' alignItems='center'>
-          {
-            Array.from({ length: perRow }).map((i, idx) => {
-              return renderCard(CARD_HEIGHT, CARD_WIDTH, index + idx, index + idx)
-            })
-          }
-        </Box>
-      </Box >
-    );
-  }
-
   return (
     <Page>
       <MenuAppBar />
@@ -84,26 +85,17 @@ function UserPage() {
 
 
 
-            <InfiniteScroll
-              dataLength={items.length}
+            <InfiniteScrollResponsive
+              data={items}
               next={fetchMoreData}
               hasMore={hasMore}
-              loader={<h4>Loading...</h4>}
-              height={600}
-              endMessage={
-                <p style={{ textAlign: "center" }}>
-                  <b>Yay! You have seen it all</b>
-                </p>
-              }
-            >
-              {items.map((i, index) => {
-                let perRow = 2;
-                if (index % perRow === 0) {
-                  return renderRow(CARD_HEIGHT, 25, perRow, items, index);
-                }
-                return;
-              })}
-            </InfiniteScroll>
+              containerHeight={600}
+              cardHeight={CARD_HEIGHT}
+              cardWidth={CARD_WIDTH}
+              renderCard={renderCard}
+              perRow={perRow}
+            />
+
 
 
           </Grid >
