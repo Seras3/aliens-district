@@ -4,31 +4,38 @@ import {
   actionTypes as rrfActionTypes,
 } from 'react-redux-firebase';
 import { constants as rfConstants } from 'redux-firestore';
+import { rootReducer } from './reducers';
 
-const store = configureStore({
-  reducer: {
-
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [
-          // just ignore every redux-firebase and react-redux-firebase action type
-          ...Object.keys(rfConstants.actionTypes).map(
-            (type) => `${rfConstants.actionsPrefix}/${type}`
-          ),
-          ...Object.keys(rrfActionTypes).map(
-            (type) => `@@reactReduxFirebase/${type}`
-          ),
-        ],
-        ignoredPaths: ['firebase', 'firestore'],
-      },
-      thunk: {
-        extraArgument: {
-          getFirebase,
+const configureAppStore = () => {
+  const store = configureStore({
+    reducer: rootReducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: [
+            // just ignore every redux-firebase and react-redux-firebase action type
+            ...Object.keys(rfConstants.actionTypes).map(
+              (type) => `${rfConstants.actionsPrefix}/${type}`
+            ),
+            ...Object.keys(rrfActionTypes).map(
+              (type) => `@@reactReduxFirebase/${type}`
+            ),
+          ],
+          ignoredPaths: ['firebase', 'firestore'],
         },
-      },
-    }),
-});
+        thunk: {
+          extraArgument: {
+            getFirebase,
+          },
+        },
+      }),
+  });
 
-export default store;
+  if (process.env.NODE_ENV !== 'production' && module.hot) {
+    module.hot.accept('./reducers', () => store.replaceReducer(rootReducer))
+  }
+
+  return store;
+}
+
+export default configureAppStore;

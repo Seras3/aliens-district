@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router-dom";
-import {
-  registerWithEmailAndPassword,
-} from "../firebase";
-import { getAuth } from "@firebase/auth";
+import { registerWithEmailAndPassword } from '../store/slices/authSlice';
+import { useDispatch, useSelector } from "react-redux";
+import { isUserAuthenticatedSelector } from "../store/selectors/auth";
 
 import { Paper, Grid, FormControl, InputLabel, Input, Button, Link } from '@mui/material';
 
@@ -12,24 +10,26 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [user, loading, error] = useAuthState(getAuth());
+
+  const isAuthenticated = useSelector(isUserAuthenticatedSelector);
+
   const history = useHistory();
+  const dispatch = useDispatch();
 
 
   const register = (e) => {
     e.preventDefault();
     if (!name) {
       alert("Please enter name");
+      return;
     }
-    console.log({ name, email, password })
 
-    registerWithEmailAndPassword(name, email, password);
+    dispatch(registerWithEmailAndPassword({ name, email, password }));
   };
 
   useEffect(() => {
-    if (loading) return;
-    if (user) history.replace("/");
-  }, [user, loading]);
+    if (isAuthenticated) history.replace("/");
+  }, [isAuthenticated, history]);
 
 
   return (

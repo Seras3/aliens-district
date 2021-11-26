@@ -1,19 +1,21 @@
-import { getAuth } from "@firebase/auth";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { logout } from "../firebase";
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from "../store/slices/authSlice";
 import { Link } from "react-router-dom";
 
 import Page from '../components/Page';
 
-import { Button, Grid, Paper, Typography } from '@mui/material';
+import { Button, Grid, Paper } from '@mui/material';
 import MenuAppBar from "../components/MenuAppBar";
+import { authSelector, isUserAuthenticatedSelector } from "../store/selectors/auth";
 
 function Home() {
-  const [user, loading, error] = useAuthState(getAuth());
+  const dispatch = useDispatch();
 
-  if (loading) return <div>Loading...</div>
+  const isAuthenticated = useSelector(isUserAuthenticatedSelector);
+  const authData = useSelector(authSelector);
 
-  if (error) return <div>Error: {error}</div>
+
+  const handleLogout = () => { dispatch(logout()) };
 
 
   return (
@@ -22,13 +24,13 @@ function Home() {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Paper>
-            <p style={{ wordWrap: 'break-word' }}>{user ? JSON.stringify(user) : "No user logged in."}</p>
+            <p style={{ wordWrap: 'break-word' }}>{authData ? JSON.stringify(authData) : "No user logged in."}</p>
           </Paper>
         </Grid>
       </Grid>
       {
-        user ?
-          <Button variant="contained" onClick={logout}>Log out</Button>
+        isAuthenticated ?
+          <Button variant="contained" onClick={handleLogout}>Log out</Button>
           :
           <Grid container spacing={2} justifyContent="center">
             <Grid item>

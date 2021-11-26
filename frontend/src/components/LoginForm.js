@@ -1,28 +1,34 @@
 import { useState, useEffect } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router-dom";
-import { signInWithGoogle, signInWitEmail } from '../firebase';
-import { getAuth } from "@firebase/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { signInWithGoogle, signInWithEmail } from '../store/slices/authSlice';
 
 import { Paper, Grid, FormControl, InputLabel, Input, Button, Link } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
+import { isUserAuthenticatedSelector } from "../store/selectors/auth";
 
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, loading, error] = useAuthState(getAuth());
+
+  const isAuthenticated = useSelector(isUserAuthenticatedSelector);
+
   const history = useHistory();
+  const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    signInWitEmail(email, password);
+    dispatch(signInWithEmail({ email, password }));
   };
 
+  const handleGoogleLogin = () => {
+    dispatch(signInWithGoogle({ displayName: null }));
+  }
+
   useEffect(() => {
-    if (loading) return;
-    if (user) history.replace("/");
-  }, [user, loading]);
+    if (isAuthenticated) history.replace("/");
+  }, [isAuthenticated, history]);
 
   return (
     <Paper>
@@ -55,7 +61,7 @@ function LoginForm() {
             <Button variant="contained"
               startIcon={<GoogleIcon style={{ fontSize: 30 }} />}
               fullWidth
-              onClick={signInWithGoogle}>
+              onClick={handleGoogleLogin}>
               Login with Google
             </Button>
           </Grid>

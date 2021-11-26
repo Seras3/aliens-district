@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { getAuth } from "@firebase/auth";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useSelector } from 'react-redux';
 
 import Page from '../components/Page';
 
@@ -13,13 +12,17 @@ import PostCard from '../components/PostCard';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-const CARD_HEIGHT = 360;
-const CARD_WIDTH = 400;
+import { uiSelector } from '../store/selectors/ui';
+import { authSelector } from '../store/selectors/auth';
+
+
 
 function UserPage() {
-  const [user, loading, error] = useAuthState(getAuth());
+  const ui = useSelector(uiSelector);
+
   const [items, setItems] = useState(Array.from({ length: 20 }));
   const [hasMore, setHasMore] = useState(true);
+  const authData = useSelector(authSelector);
 
   const theme = useTheme();
   const xs = useMediaQuery(theme.breakpoints.up('xs'));
@@ -49,26 +52,25 @@ function UserPage() {
     }, 500);
   };
 
-  if (loading) return <div>Loading...</div>
-
-  if (error) return <div>Error: {error}</div>
-
 
   const renderCard = (height, width, content, index) => {
     return <PostCard height={height} width={width} content={content} index={index} />
   }
+
   return (
     <Page>
       <MenuAppBar />
       <Box sx={{ display: 'flex', minHeight: { xs: "30vw", md: "20vw" } }} justifyContent='center' alignItems='center' flexGrow={1}>
         <Box sx={{ display: 'flex' }} flexDirection="column" alignItems='center' marginTop="1rem">
-          <UserAvatar size='calc(100px + 5vw)' src={null} />
+          <UserAvatar size='calc(100px + 5vw)' src={authData.photoURL} />
           <Box bgcolor={(theme) => addAlphaToHex(theme.palette.secondary.main, 0.7)}
             borderRadius='50px'
             marginTop='1rem'
             paddingX='0.5rem'
           >
-            <Typography variant="h5" color={(theme) => theme.palette.primary.contrastText}>User Name</Typography>
+            <Typography variant="h5" color={(theme) => theme.palette.primary.contrastText}>
+              {authData.displayName}
+            </Typography>
           </Box>
         </Box>
       </Box>
@@ -90,8 +92,8 @@ function UserPage() {
               next={fetchMoreData}
               hasMore={hasMore}
               containerHeight={600}
-              cardHeight={CARD_HEIGHT}
-              cardWidth={CARD_WIDTH}
+              cardHeight={ui.postCard.height}
+              cardWidth={ui.postCard.width}
               renderCard={renderCard}
               perRow={perRow}
             />
