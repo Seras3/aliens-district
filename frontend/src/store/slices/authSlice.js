@@ -89,17 +89,27 @@ export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
   }
 });
 
+const setAuthReducer = (state, action) => {
+  const { uid, displayName, email, photoURL, authenticated } = action.payload;
+  state.uid = uid;
+  state.displayName = displayName;
+  state.email = email;
+  state.photoURL = photoURL;
+
+  if (authenticated) {
+    state.authenticated = authenticated;
+  }
+}
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    setAuth: setAuthReducer
+  },
   extraReducers: builder => {
     builder.addCase(signInWithGoogle.fulfilled, (state, action) => {
-      const { uid, displayName, email, photoURL } = action.payload;
-      state.uid = uid;
-      state.displayName = displayName;
-      state.email = email;
-      state.photoURL = photoURL;
+      setAuthReducer(state, action);
       state.authenticated = true;
     });
     builder.addCase(signInWithGoogle.rejected, (state, action) => {
@@ -107,11 +117,7 @@ const authSlice = createSlice({
     });
 
     builder.addCase(registerWithEmailAndPassword.fulfilled, (state, action) => {
-      const { uid, displayName, email, photoURL } = action.payload;
-      state.uid = uid;
-      state.displayName = displayName;
-      state.email = email;
-      state.photoURL = photoURL;
+      setAuthReducer(state, action);
       state.authenticated = true;
     });
     builder.addCase(registerWithEmailAndPassword.rejected, (state, action) => {
@@ -119,11 +125,7 @@ const authSlice = createSlice({
     });
 
     builder.addCase(signInWithEmail.fulfilled, (state, action) => {
-      const { uid, displayName, email, photoURL } = action.payload;
-      state.uid = uid;
-      state.displayName = displayName;
-      state.email = email;
-      state.photoURL = photoURL;
+      setAuthReducer(state, action);
       state.authenticated = true;
     });
     builder.addCase(signInWithEmail.rejected, (state, action) => {
@@ -133,10 +135,7 @@ const authSlice = createSlice({
 
     builder.addCase(logout.fulfilled, state => {
       state.authenticated = false;
-      state.uid = initialState.uid;
-      state.displayName = initialState.displayName;
-      state.email = initialState.email;
-      state.photoURL = initialState.photoURL;
+      setAuthReducer(state, { payload: initialState });
     });
     builder.addCase(logout.rejected, (state, action) => {
       state.error = action.error;
@@ -144,6 +143,6 @@ const authSlice = createSlice({
   },
 });
 
-
+export const { setAuth } = authSlice.actions;
 
 export default authSlice.reducer;

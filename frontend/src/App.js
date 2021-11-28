@@ -14,8 +14,8 @@ function App() {
     <Router>
       <Switch>
         <Route exact path="/" component={HomePage} />
-        <Route exact path="/login" render={() => <AuthPage isLogin />} />
-        <Route exact path="/register" render={() => <AuthPage />} />
+        <RedirectMemberRoute exact path="/login" render={() => <AuthPage isLogin />} />
+        <RedirectMemberRoute exact path="/register" render={() => <AuthPage />} />
 
         <Route exact path="/user" component={UserPage} />
 
@@ -25,6 +25,14 @@ function App() {
   );
 }
 
+
+const RedirectMemberRoute = (props) => {
+  const isAuthenticated = useSelector(isUserAuthenticatedSelector);
+  console.log({ isAuthenticated });
+
+  return <Route {...props}
+    render={() => !isAuthenticated ? props.render() : <Redirect to="/" />} />
+};
 
 
 const PrivateRoute = ({ component: Component, ...rest }) => {

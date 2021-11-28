@@ -13,6 +13,7 @@ function UserAvatar(props) {
     padding: padding ?? 0,
     border: (theme) => '3px solid ' + theme.palette.secondary.main
   }}
+    imgProps={{ referrerPolicy: 'no-referrer' }}
     alt='Profile Picture'
     src={src ?? DEFAULT_PROFILE_PICTURE_URL}
   />;
