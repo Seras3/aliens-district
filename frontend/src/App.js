@@ -9,6 +9,8 @@ import AuthPage from "./pages/AuthPage";
 import UserPage from "./pages/UserPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
+import TestPage from "./pages/TestPage";
+
 function App() {
   return (
     <Router>
@@ -18,6 +20,7 @@ function App() {
         <RedirectMemberRoute exact path="/register" render={() => <AuthPage />} />
 
         <Route exact path="/user" component={UserPage} />
+        <Route exact path="/test" component={TestPage} />
 
         <Route path="*" component={NotFoundPage} />
       </Switch>
@@ -35,6 +38,7 @@ const RedirectMemberRoute = (props) => {
 };
 
 
+/*
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const isAuthenticated = useSelector(isUserAuthenticatedSelector);
 
@@ -44,6 +48,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
     )} />
   );
 };
+*/
 
 
 
