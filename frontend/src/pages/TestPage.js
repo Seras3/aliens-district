@@ -30,7 +30,7 @@ function TestPage() {
     <div>
       { // GET ALL POSTS
 
-        //<button onClick={() => getAllPosts()}>GET ALL POSTS</button>
+        <button onClick={() => getAllPosts()}>GET ALL POSTS</button>
       }
 
       { // EDIT POST

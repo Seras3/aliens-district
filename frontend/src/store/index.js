@@ -21,7 +21,7 @@ const configureAppStore = () => {
               (type) => `@@reactReduxFirebase/${type}`
             ),
           ],
-          ignoredPaths: ['firebase', 'firestore'],
+          ignoredPaths: ['firebase', 'firestore',],
         },
         thunk: {
           extraArgument: {
