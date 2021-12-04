@@ -1,4 +1,5 @@
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { UNAUTHENTICATED_ERROR_MESSAGE } from '../../utils/errors';
 
 const auth = getAuth();
 
@@ -15,9 +16,9 @@ onAuthStateChanged(auth, (currentUser) => {
 
 const isAuthenticatedMiddleware = async (next, reject) => {
   if (user) {
-    next(user);
+    return await next(user);
   } else {
-    reject("You should authenticate in order to do that.");
+    return reject(UNAUTHENTICATED_ERROR_MESSAGE);
   }
 }
 
