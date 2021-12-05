@@ -15,13 +15,16 @@ function InfiniteScrollResponsive({
 }) {
 
   const renderRow = (height, margin, perRow, arr, index) => {
+    let content = {};
+
     return (
       <Box sx={{ height: height + 2 * margin + 'px' }} key={index}>
         <Box sx={{ display: 'flex', height: '100%' }} flexGrow={1} justifyContent='space-around' alignItems='center'>
           {
             Array.from({ length: perRow }).map((i, idx) => {
-              return renderCard(cardHeight, cardWidth, index + idx, index + idx)
-            }) // TODO: arr[index+ idx] --- on content
+              content = index + idx < arr.length ? arr[index + idx] : {};
+              return renderCard(cardHeight, cardWidth, content, index + idx);
+            })
           }
         </Box>
       </Box >

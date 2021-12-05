@@ -2,11 +2,15 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   collection, addDoc, getDoc,
   getDocs, Timestamp, doc, setDoc,
-  deleteDoc
-} from "firebase/firestore/lite";
+  deleteDoc, query, orderBy, limit, where
+} from "firebase/firestore";
 import { db } from '../../firebase';
-import { mapSnapshotToArray } from '../utils/mapper';
-import { PERMISSION_DENIED_ERROR, INVALID_OPERATION_ERROR } from '../../utils/errors';
+import { mapSnapshotToArray, mapSnapshotToObject } from '../utils/mapper';
+import {
+  PERMISSION_DENIED_ERROR,
+  INVALID_OPERATION_ERROR,
+  INVALID_REQUEST_ERROR
+} from '../../utils/errors';
 import { cleanObject } from '../utils/mapper';
 
 import isAuthenticatedMiddleware from '../middlewares/isAuthenticatedMiddleware';
@@ -17,6 +21,7 @@ const postsRef = collection(db, COLLECTION_NAME);
 
 const initialState = {
   posts: [],
+  loading: false,
   error: undefined,
 };
 
@@ -48,9 +53,44 @@ export const getAllPosts = createAsyncThunk(
   'post/getAllPosts',
   async (_, thunkAPI) => {
     try {
-      const querySnapshot = await getDocs(postsRef);
+      const q = query(postsRef, orderBy('timestamp', 'desc'));
+      const querySnapshot = await getDocs(q);
       const posts = mapSnapshotToArray(querySnapshot);
       return posts;
+    } catch (error) {
+      return thunkAPI.rejectWithValue({ error: error.message });
+    }
+  }
+);
+
+export const getUserPosts = createAsyncThunk(
+  'post/getUserPosts',
+  async ({ userId, reqLimit }, thunkAPI) => {
+    if (!userId) return thunkAPI.rejectWithValue({ error: INVALID_REQUEST_ERROR });
+    try {
+      const q = query(postsRef, where('userId', '==', userId), limit(reqLimit));
+      const querySnapshot = await getDocs(q);
+      const posts = mapSnapshotToArray(querySnapshot);
+      return posts;
+    } catch (error) {
+      return thunkAPI.rejectWithValue({ error: error.message });
+    }
+  }
+);
+
+export const getPostById = createAsyncThunk(
+  'post/getPostById',
+  async ({ postId }, thunkAPI) => {
+    if (!postId) return thunkAPI.rejectWithValue({ error: INVALID_REQUEST_ERROR });
+
+    try {
+      const postRef = doc(db, COLLECTION_NAME, postId);
+      const docSnap = await getDoc(postRef);
+      if (docSnap.exists()) {
+        return mapSnapshotToObject(docSnap, postId);
+      } else {
+        return thunkAPI.rejectWithValue({ error: INVALID_OPERATION_ERROR });
+      }
     } catch (error) {
       return thunkAPI.rejectWithValue({ error: error.message });
     }
@@ -127,26 +167,75 @@ const postSlice = createSlice({
   name: 'post',
   initialState,
   extraReducers: builder => {
+    builder.addCase(addPost.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(addPost.fulfilled, (state, action) => {
+      state.loading = false;
+    });
     builder.addCase(addPost.rejected, (state, action) => {
       state.error = action.payload.error;
+      state.loading = false;
     });
 
-
+    builder.addCase(getAllPosts.pending, (state, action) => {
+      state.loading = true;
+    });
     builder.addCase(getAllPosts.fulfilled, (state, action) => {
       state.posts = action.payload;
+      state.loading = false;
     });
     builder.addCase(getAllPosts.rejected, (state, action) => {
       state.error = action.payload.error;
+      state.loading = false;
+    });
+
+    builder.addCase(getUserPosts.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(getUserPosts.fulfilled, (state, action) => {
+      state.posts = action.payload;
+      state.loading = false;
+    });
+    builder.addCase(getUserPosts.rejected, (state, action) => {
+      state.error = action.payload.error;
+      state.loading = false;
+    });
+
+    builder.addCase(getPostById.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(getPostById.fulfilled, (state, action) => {
+      state.editPost = action.payload;
+      state.loading = false;
+    });
+    builder.addCase(getPostById.rejected, (state, action) => {
+      state.error = action.payload.error;
+      state.loading = false;
     });
 
 
+    builder.addCase(editPost.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(editPost.fulfilled, (state, action) => {
+      state.loading = false;
+    });
     builder.addCase(editPost.rejected, (state, action) => {
       state.error = action.payload.error;
+      state.loading = false;
     });
 
 
+    builder.addCase(deletePost.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(deletePost.fulfilled, (state, action) => {
+      state.loading = false;
+    });
     builder.addCase(deletePost.rejected, (state, action) => {
       state.error = action.payload.error;
+      state.loading = false;
     });
   }
 });

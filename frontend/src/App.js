@@ -10,6 +10,7 @@ import UserPage from "./pages/UserPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 import TestPage from "./pages/TestPage";
+import ModifyPostPage from "./pages/ModifyPostPage";
 
 function App() {
   return (
@@ -19,7 +20,10 @@ function App() {
         <RedirectMemberRoute exact path="/login" render={() => <AuthPage isLogin />} />
         <RedirectMemberRoute exact path="/register" render={() => <AuthPage />} />
 
-        <Route exact path="/user" component={UserPage} />
+        <Route exact path="/user/:id" component={UserPage} />
+        <Route exact path="/new-post" component={ModifyPostPage} />
+        <Route exact path="/post/:id" component={ModifyPostPage} />
+
         <Route exact path="/test" component={TestPage} />
 
         <Route path="*" component={NotFoundPage} />

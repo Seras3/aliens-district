@@ -6,6 +6,7 @@ import {
   deletePost as apiDeletePost,
 } from '../store/slices/postSlice';
 
+import PostForm from '../components/PostForm';
 
 function TestPage() {
   const dispatch = useDispatch();
@@ -51,6 +52,7 @@ function TestPage() {
         <button onClick={() => deletePost()}>DELETE POST</button>
 
       }
+      <PostForm />
     </div>
   );
 }
