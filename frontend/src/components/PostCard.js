@@ -6,16 +6,20 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  Box
+  Box,
+  Link
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { DEFAULT_PROFILE_PICTURE_URL } from "../constants";
 import moment from 'moment';
 
 
-function PostCard({ height, width, content, index, editable, onEditClick }) {
+function PostCard({ height, width, content, index, editable, onEditClick, onAvatarClick }) {
 
-  const { title, description, imageURL, timestamp } = content;
+  const { title, description, imageURL, timestamp, owner } = content;
+
+  const userImageURL = owner?.imageURL;
+  const userEmail = owner?.email;
 
   let action = null;
 
@@ -36,9 +40,9 @@ function PostCard({ height, width, content, index, editable, onEditClick }) {
     }} key={index} >
       <CardHeader
         avatar={
-          <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
-            R
-          </Avatar>
+          <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe" src={userImageURL}
+            onClick={onAvatarClick}
+          />
         }
         action={action}
         title={title}

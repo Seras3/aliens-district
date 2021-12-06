@@ -11,10 +11,11 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 import TestPage from "./pages/TestPage";
 import ModifyPostPage from "./pages/ModifyPostPage";
+import { createBrowserHistory } from 'history';
 
 function App() {
   return (
-    <Router>
+    <Router history={createBrowserHistory()}>
       <Switch>
         <Route exact path="/" component={HomePage} />
         <RedirectMemberRoute exact path="/login" render={() => <AuthPage isLogin />} />
@@ -35,7 +36,6 @@ function App() {
 
 const RedirectMemberRoute = (props) => {
   const isAuthenticated = useSelector(isUserAuthenticatedSelector);
-  console.log({ isAuthenticated });
 
   return <Route {...props}
     render={() => !isAuthenticated ? props.render() : <Redirect to="/" />} />

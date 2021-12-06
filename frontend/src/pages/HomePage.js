@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
+import { useHistory } from 'react-router';
 
 import { Button, Grid, Paper, useMediaQuery, Typography, Box } from '@mui/material';
 import { Link } from "react-router-dom";
@@ -15,14 +16,14 @@ import { addAlphaToHex } from '../utils/colors';
 import { authSelector, isUserAuthenticatedSelector } from "../store/selectors/auth";
 import { postSelector } from '../store/selectors/post';
 import { uiSelector } from '../store/selectors/ui';
-import { getAllPosts } from '../store/slices/postSlice';
+import { getAllPosts, clearPosts } from '../store/slices/postSlice';
 
 function Home() {
   const dispatch = useDispatch();
+  const history = useHistory();
 
   const isAuthenticated = useSelector(isUserAuthenticatedSelector);
   const postState = useSelector(postSelector);
-  const user = useSelector(authSelector);
   const ui = useSelector(uiSelector);
 
   const loadNextPosts = () => {
@@ -64,7 +65,12 @@ function Home() {
 
 
   const renderCard = (height, width, content, index) => {
-    return <PostCard height={height} width={width} content={content} index={index} />
+    return <PostCard height={height} width={width} content={content} index={index}
+      onAvatarClick={() => {
+        dispatch(clearPosts());
+        history.push('/user/' + content.owner?.id);
+      }}
+    />
   }
 
 
@@ -78,7 +84,7 @@ function Home() {
           marginBottom="1rem"
           marginTop="2rem"
           align="center">
-          {isAuthenticated ? 'Fresh Aliens' : 'Last 6 Aliens'}
+          Fresh Aliens
         </Typography>
       </Box>
 

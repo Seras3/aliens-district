@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router';
 
 import Page from '../components/Page';
 
@@ -13,24 +12,27 @@ import InfiniteScrollResponsive from '../components/InfiniteScrollResponsive';
 import PostCard from '../components/PostCard';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { DEFAULT_PROFILE_PICTURE_URL } from '../constants';
 import _ from 'lodash';
 
 import { uiSelector } from '../store/selectors/ui';
 import { authSelector } from '../store/selectors/auth';
 import { postSelector } from '../store/selectors/post';
+import { pageOwnerSelector } from '../store/selectors/user';
 
 import { getUserPosts } from '../store/slices/postSlice';
-
+import { getUserById } from '../store/slices/userSlice';
 
 
 function UserPage(props) {
+  const history = props.history;
   const dispatch = useDispatch();
-  const history = useHistory();
   const userPageId = props.match.params.id;
 
   const ui = useSelector(uiSelector);
   const postState = useSelector(postSelector);
   const user = useSelector(authSelector);
+  const pageOwner = useSelector(pageOwnerSelector);
 
   const [items, setItems] = useState([]);
   const [nextPage, setNextPage] = useState(1);
@@ -39,6 +41,11 @@ function UserPage(props) {
 
 
   const isMyPage = user.uid === userPageId;
+
+  const loadUser = () => {
+    setItems([]);
+    dispatch(getUserById({ userId: userPageId }));
+  }
 
   const loadNextPosts = _.debounce(() => {
     // TODO: use NextPage
@@ -67,8 +74,9 @@ function UserPage(props) {
 
 
   useEffect(() => {
+    loadUser();
     loadNextPosts();
-  }, [])
+  }, [props.history.location])
 
   useEffect(() => {
     setRequestLimit(user.authenticated ? 6 : 4);
@@ -94,6 +102,7 @@ function UserPage(props) {
       content={content} index={index}
       editable={isMyPage}
       onEditClick={() => { history.push('/post/' + content.id) }}
+      onAvatarClick={() => { history.push('/user/' + content.owner?.id) }}
     />
   }
 
@@ -102,14 +111,14 @@ function UserPage(props) {
       <MenuAppBar />
       <Box sx={{ display: 'flex', minHeight: { xs: "30vw", md: "20vw" } }} justifyContent='center' alignItems='center' flexGrow={1}>
         <Box sx={{ display: 'flex' }} flexDirection="column" alignItems='center' marginTop="1rem">
-          <UserAvatar size='calc(100px + 5vw)' src={user.photoURL} />
+          <UserAvatar size='calc(100px + 5vw)' src={pageOwner?.user?.photoURL ?? DEFAULT_PROFILE_PICTURE_URL} />
           <Box bgcolor={(theme) => addAlphaToHex(theme.palette.secondary.main, 0.7)}
             borderRadius='50px'
             marginTop='1rem'
             paddingX='0.5rem'
           >
             <Typography variant="h5" color={(theme) => theme.palette.primary.contrastText}>
-              {user.displayName}
+              {pageOwner?.user?.displayName}
             </Typography>
           </Box>
         </Box>
@@ -129,12 +138,14 @@ function UserPage(props) {
                 {user.authenticated ? 'Owned Aliens' : 'Last 4 Aliens'}
               </Typography>
 
-              <Button variant="contained"
-                sx={{ marginBottom: (sm ? '' : '2rem') }}
-                startIcon={<AddIcon style={{ fontSize: 30 }} />}
-                onClick={() => history.push('/new-post')}>
-                Add New Alien
-              </Button>
+              {isMyPage &&
+                <Button variant="contained"
+                  sx={{ marginBottom: (sm ? '' : '2rem') }}
+                  startIcon={<AddIcon style={{ fontSize: 30 }} />}
+                  onClick={() => history.push('/new-post')}>
+                  Add New Alien
+                </Button>
+              }
             </Box>
 
 

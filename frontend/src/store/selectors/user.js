@@ -1,0 +1,1 @@
+export const pageOwnerSelector = (state) => state.user;

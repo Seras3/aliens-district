@@ -11,9 +11,18 @@ import {
   updateProfile,
   signOut,
 } from 'firebase/auth';
+import {
+  collection, addDoc, getDoc,
+  getDocs, Timestamp, doc, setDoc,
+  deleteDoc, query, orderBy, limit, where
+} from "firebase/firestore";
+
+import { db } from '../../firebase';
 import '../../firebase';
 import { DEFAULT_PROFILE_PICTURE_URL } from '../../constants';
 
+
+const COLLECTION_NAME = "users";
 
 const initialState = {
   uid: undefined,
@@ -26,6 +35,22 @@ const initialState = {
 
 const auth = getAuth();
 const googleProvider = new GoogleAuthProvider();
+
+
+const saveUser = async (user, thunkAPI) => {
+  const userRef = doc(db, COLLECTION_NAME, user.uid);
+  const docSnap = await getDoc(userRef);
+  if (!docSnap.exists()) {
+    try {
+      await setDoc(userRef, {
+        ...user,
+        timestamp: Timestamp.now(),
+      });
+    } catch (error) {
+      return thunkAPI.rejectWithValue({ error: error.message });
+    }
+  }
+}
 
 export const signInWithEmail = createAsyncThunk(
   'auth/signInWithEmail',
@@ -49,9 +74,11 @@ export const registerWithEmailAndPassword = createAsyncThunk(
       updateProfile(res.user, {
         displayName: name,
         photoURL: DEFAULT_PROFILE_PICTURE_URL
-      }).then(() => {
-        const { uid, } = getAuth().currentUser;
-        return { uid, displayName: name, email, photoURL: DEFAULT_PROFILE_PICTURE_URL };
+      }).then(async () => {
+        const { uid } = getAuth().currentUser;
+        const user = { uid, displayName: name, email, photoURL: DEFAULT_PROFILE_PICTURE_URL };
+        await saveUser(user, thunkAPI);
+        return { ...user };
       }).catch((error) => {
         return thunkAPI.rejectWithValue({ error: error.message });
       });
@@ -70,7 +97,9 @@ export const signInWithGoogle = createAsyncThunk(
       if (req.displayName === null) {
         const response = await signInWithPopup(auth, googleProvider);
         const { uid, displayName, email, photoURL } = response.user;
-        return { uid, displayName, email, photoURL };
+        const user = { uid, displayName, email, photoURL };
+        await saveUser(user, thunkAPI);
+        return { ...user };
       } else {
         const { uid, displayName, email, photoURL } = req;
         return { uid, displayName, email, photoURL };
@@ -101,6 +130,8 @@ const setAuthReducer = (state, action) => {
   }
 }
 
+
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -113,7 +144,7 @@ const authSlice = createSlice({
       state.authenticated = true;
     });
     builder.addCase(signInWithGoogle.rejected, (state, action) => {
-      state.error = action.error;
+      state.error = action.payload.error;
     });
 
     builder.addCase(registerWithEmailAndPassword.fulfilled, (state, action) => {
@@ -121,7 +152,7 @@ const authSlice = createSlice({
       state.authenticated = true;
     });
     builder.addCase(registerWithEmailAndPassword.rejected, (state, action) => {
-      state.error = action.error;
+      state.error = action.payload.error;
     });
 
     builder.addCase(signInWithEmail.fulfilled, (state, action) => {
@@ -129,7 +160,7 @@ const authSlice = createSlice({
       state.authenticated = true;
     });
     builder.addCase(signInWithEmail.rejected, (state, action) => {
-      state.error = action.error;
+      state.error = action.payload.error;
     });
 
 
@@ -138,7 +169,7 @@ const authSlice = createSlice({
       setAuthReducer(state, { payload: initialState });
     });
     builder.addCase(logout.rejected, (state, action) => {
-      state.error = action.error;
+      state.error = action.payload.error;
     });
   },
 });

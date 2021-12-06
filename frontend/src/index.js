@@ -11,7 +11,6 @@ import AuthHandler from "./components/AuthHandler";
 
 
 
-
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={configureAppStore()}>

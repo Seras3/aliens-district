@@ -36,7 +36,11 @@ export const addPost = createAsyncThunk(
             description,
             imageURL,
             timestamp: Timestamp.now(),
-            userId: user.uid
+            owner: {
+              id: user.uid,
+              imageURL: user.photoURL,
+              email: user.email
+            }
           });
         } catch (error) {
           return thunkAPI.rejectWithValue({ error: error.message });
@@ -68,7 +72,7 @@ export const getUserPosts = createAsyncThunk(
   async ({ userId, reqLimit }, thunkAPI) => {
     if (!userId) return thunkAPI.rejectWithValue({ error: INVALID_REQUEST_ERROR });
     try {
-      const q = query(postsRef, where('userId', '==', userId), limit(reqLimit));
+      const q = query(postsRef, where('owner.id', '==', userId), limit(reqLimit));
       const querySnapshot = await getDocs(q);
       const posts = mapSnapshotToArray(querySnapshot);
       return posts;
@@ -106,7 +110,7 @@ export const editPost = createAsyncThunk(
         const docSnap = await getDoc(postRef);
 
         if (docSnap.exists()) {
-          if (docSnap.data().userId === user.uid) {
+          if (docSnap.data().owner.id === user.uid) {
             try {
               const cleanObj = cleanObject({ title, description, imageURL });
               await setDoc(postRef, cleanObj, { merge: true });
@@ -139,7 +143,7 @@ export const deletePost = createAsyncThunk(
         const docSnap = await getDoc(postRef);
 
         if (docSnap.exists()) {
-          if (docSnap.data().userId === user.uid) {
+          if (docSnap.data().owner.id === user.uid) {
             try {
               await deleteDoc(postRef);
 
@@ -166,6 +170,11 @@ export const deletePost = createAsyncThunk(
 const postSlice = createSlice({
   name: 'post',
   initialState,
+  reducers: {
+    clearPosts(state, action) {
+      state.posts = [];
+    }
+  },
   extraReducers: builder => {
     builder.addCase(addPost.pending, (state, action) => {
       state.loading = true;
@@ -239,5 +248,7 @@ const postSlice = createSlice({
     });
   }
 });
+
+export const { clearPosts } = postSlice.actions;
 
 export default postSlice.reducer;
