@@ -37,7 +37,7 @@ function UserPage(props) {
   const [items, setItems] = useState([]);
   const [nextPage, setNextPage] = useState(1);
   const [hasMore, setHasMore] = useState(false); // TOTO: set to true when enable pagination
-  const [requestLimit, setRequestLimit] = useState(4);
+  const [requestLimit, setRequestLimit] = useState(6);
 
 
   const isMyPage = user.uid === userPageId;
@@ -78,8 +78,13 @@ function UserPage(props) {
     loadNextPosts();
   }, [props.history.location])
 
+
   useEffect(() => {
-    setRequestLimit(user.authenticated ? 6 : 4);
+    loadNextPosts();
+  }, [requestLimit]);
+
+  useEffect(() => {
+    setRequestLimit(user.authenticated ? 100 : 4);
   }, [user.authenticated]);
 
 
@@ -89,9 +94,13 @@ function UserPage(props) {
       return;
     }
 
+    setItems([...(postState.posts)]);
+
+    /*
     setItems((prevItems) => {
       return nextPage === 1 ? [] : [...prevItems, ...(postState.posts)]
     });
+    */
 
   }, [postState.posts]);
 

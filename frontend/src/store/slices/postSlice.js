@@ -55,9 +55,9 @@ export const addPost = createAsyncThunk(
 
 export const getAllPosts = createAsyncThunk(
   'post/getAllPosts',
-  async (_, thunkAPI) => {
+  async ({ reqLimit }, thunkAPI) => {
     try {
-      const q = query(postsRef, orderBy('timestamp', 'desc'));
+      const q = query(postsRef, orderBy('timestamp', 'desc'), limit(reqLimit));
       const querySnapshot = await getDocs(q);
       const posts = mapSnapshotToArray(querySnapshot);
       return posts;

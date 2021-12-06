@@ -28,12 +28,13 @@ function Home() {
 
   const loadNextPosts = () => {
     setTimeout(() => {
-      dispatch(getAllPosts());
+      dispatch(getAllPosts({ reqLimit: requestLimit }));
     }, 250); // TODO: remove delay when sure 
   };
 
   const [items, setItems] = useState([]);
   const [hasMore, setHasMore] = useState(false); // TOTO: set to true when enable pagination
+  const [requestLimit, setRequestLimit] = useState(6);
 
   const theme = useTheme();
   const xs = useMediaQuery(theme.breakpoints.up('xs'));
@@ -55,12 +56,21 @@ function Home() {
   }, []);
 
   useEffect(() => {
+    loadNextPosts();
+  }, [requestLimit]);
+
+  useEffect(() => {
+    setRequestLimit(isAuthenticated ? 100 : 6);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (items.length >= 100) { // TODO: update hasMore logic
       setHasMore(false);
       return;
     }
 
-    setItems((prevItems) => [...prevItems, ...(postState.posts)]);
+    setItems([...(postState.posts)]);
+    //setItems((prevItems) => [...prevItems, ...(postState.posts)]);
   }, [postState.posts]);
 
 
@@ -84,7 +94,7 @@ function Home() {
           marginBottom="1rem"
           marginTop="2rem"
           align="center">
-          Fresh Aliens
+          {isAuthenticated ? 'Fresh Aliens' : 'Last 6 Aliens'}
         </Typography>
       </Box>
 
