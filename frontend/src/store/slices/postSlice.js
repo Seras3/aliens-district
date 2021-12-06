@@ -215,6 +215,7 @@ const postSlice = createSlice({
       state.loading = true;
     });
     builder.addCase(getPostById.fulfilled, (state, action) => {
+      console.log({ pld: action.payload });
       state.editPost = action.payload;
       state.loading = false;
     });

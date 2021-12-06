@@ -22,7 +22,7 @@ const initialState = {
 };
 
 export const getUserById = createAsyncThunk(
-  'post/getPostById',
+  'post/getUserById',
   async ({ userId }, thunkAPI) => {
     if (!userId) return thunkAPI.rejectWithValue({ error: INVALID_REQUEST_ERROR });
 

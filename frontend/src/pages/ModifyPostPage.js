@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
+import _ from 'lodash';
 
 import { Grid } from '@mui/material';
 
@@ -17,7 +18,7 @@ import { authSelector } from '../store/selectors/auth';
 function ModifyPostPage(props) {
   const postId = props.match?.params?.id;
 
-  const history = useHistory();
+  const history = props.history;
   const dispatch = useDispatch();
   const user = useSelector(authSelector);
 
@@ -29,7 +30,15 @@ function ModifyPostPage(props) {
     if (postId) {
       dispatch(getPostById({ postId }));
     }
-  }, []);
+  }, [postId]);
+
+  useEffect(() => {
+    if (!(_.isEmpty(post))) {
+      if (post?.owner?.id !== user.uid) {
+        history.replace('/access-denied');
+      }
+    }
+  }, [post]);
 
 
   return (

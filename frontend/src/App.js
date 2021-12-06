@@ -7,6 +7,7 @@ import { isUserAuthenticatedSelector } from './store/selectors/auth';
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import UserPage from "./pages/UserPage";
+import AccessDeniedPage from "./pages/AccessDeniedPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 import TestPage from "./pages/TestPage";
@@ -22,11 +23,13 @@ function App() {
         <RedirectMemberRoute exact path="/register" render={() => <AuthPage />} />
 
         <Route exact path="/user/:id" component={UserPage} />
-        <Route exact path="/new-post" component={ModifyPostPage} />
-        <Route exact path="/post/:id" component={ModifyPostPage} />
+
+        <PrivateRoute exact path="/new-post" component={ModifyPostPage} />
+        <PrivateRoute exact path="/post/:id" component={ModifyPostPage} />
 
         <Route exact path="/test" component={TestPage} />
 
+        <Route exact path="/access-denied" component={AccessDeniedPage} />
         <Route path="*" component={NotFoundPage} />
       </Switch>
     </Router>
@@ -41,6 +44,16 @@ const RedirectMemberRoute = (props) => {
     render={() => !isAuthenticated ? props.render() : <Redirect to="/" />} />
 };
 
+const PrivateRoute = ({ component: Component, ...rest }) => {
+  const isAuthenticated = useSelector(isUserAuthenticatedSelector);
+  return <Route {...rest}
+    render={(pr) => {
+      console.log({ pr });
+      return isAuthenticated ?
+        <Component {...pr} />
+        : <Redirect to="/access-denied" />
+    }} />
+}
 
 /*
 const PrivateRoute = ({ component: Component, ...rest }) => {
